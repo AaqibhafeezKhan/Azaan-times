@@ -65,6 +65,19 @@ function playAzaan() {
     audio.play();
 }
 
+function getLocation() {
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            userSettings.location = position.coords;
+            getPrayerTimes(position.coords);
+        },
+        error => {
+            console.error('Geolocation error:', error);
+            alert('Please enable location access or use manual input');
+            showManualLocation();
+        }
+    );
+}
 // Service Worker Registration
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
