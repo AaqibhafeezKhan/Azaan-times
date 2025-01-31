@@ -68,8 +68,9 @@ function playAzaan() {
 // Service Worker Registration
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(() => console.log('Service Worker Registered'))
-            .catch(err => console.log('Service Worker Error', err));
+        // Update path for Vercel deployment
+        navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+            .then(() => console.log('SW Registered'))
+            .catch(err => console.log('SW Registration Failed:', err));
     }
 }
