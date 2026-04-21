@@ -303,8 +303,8 @@ function PrayTimes(method) {
         var params = { night: math.fixHour(times.sunset - times.sunrise), fajr: setting.fajr, isha: setting.isha };
         var nightTime = math.diff(times.sunset, times.sunrise);
         times.imsak = adjustHLTime(times.imsak, times.sunrise, parseFloat(setting.imsak) || 0, nightTime, 'ccw');
-        times.fajr = adjustHLTime(times.fajr, times.sunrise, setting.fajr, nightTime, 'ccw');
-        times.isha = adjustHLTime(times.isha, times.sunset, setting.isha, nightTime);
+        times.fajr = adjustHLTime(times.fajr, times.sunrise, parseFloat(setting.fajr) || 0, nightTime, 'ccw');
+        times.isha = adjustHLTime(times.isha, times.sunset, parseFloat(setting.isha) || 0, nightTime);
         times.maghrib = adjustHLTime(times.maghrib, times.sunset, parseFloat(setting.maghrib) || 0, nightTime);
         return times;
     }
