@@ -282,11 +282,21 @@ function renderPrayerTimes() {
 }
 
 function parseTime(timeStr) {
-    const [time, period] = timeStr.split(' ');
-    let [h, m] = time.split(':').map(Number);
-    if (period === 'PM' && h !== 12) h += 12;
-    if (period === 'AM' && h === 12) h = 0;
-    return [h, m];
+    if (!timeStr || typeof timeStr !== 'string') return [0, 0];
+
+    const trimmed = timeStr.trim();
+    const hasPeriod = trimmed.includes('AM') || trimmed.includes('PM');
+
+    if (hasPeriod) {
+        const [time, period] = trimmed.split(' ');
+        let [h, m] = time.split(':').map(Number);
+        if (period === 'PM' && h !== 12) h += 12;
+        if (period === 'AM' && h === 12) h = 0;
+        return [h, m];
+    } else {
+        const [h, m] = trimmed.split(':').map(Number);
+        return [h || 0, m || 0];
+    }
 }
 
 function updateNextPrayer() {
