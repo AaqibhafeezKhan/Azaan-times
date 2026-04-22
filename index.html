@@ -1,201 +1,664 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0F766E">
+    <meta name="theme-color" content="#10b981">
     <meta name="description" content="Islamic Prayer Times, Qibla Direction, Hijri Calendar, and more">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Azaan Pro - Islamic Prayer Times</title>
+    <title>Islamic Prayer Times</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230d9488' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>☪</text></svg>">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Azaan Pro">
-    <meta name="msapplication-TileColor" content="#0F766E">
-    <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
-    <meta name="msapplication-config" content="browserconfig.xml">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310b981' width='100' height='100' rx='20'/><text x='50' y='70' font-size='45' text-anchor='middle' fill='white' font-family='serif'>☪</text></svg>">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="h-full bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
-    <div id="app" class="min-h-screen pb-20">
-        <div id="loading" class="fixed inset-0 bg-white dark:bg-gray-900 z-50 flex flex-col items-center justify-center">
-            <div class="relative">
-                <div class="w-20 h-20 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fas fa-mosque text-teal-600 text-2xl"></i>
-                </div>
-            </div>
-            <p class="mt-6 text-gray-600 dark:text-gray-300 text-lg">Loading prayer times...</p>
-        </div>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'amiri': ['Amiri', 'serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        <header class="bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg">
-            <div class="container mx-auto px-4 py-4">
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .arabic {
+            font-family: 'Amiri', serif;
+            direction: rtl;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+            animation: pulse-ring 1.5s ease-out infinite;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .prayer-row {
+            transition: all 0.2s ease;
+        }
+
+        .prayer-row.active {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border-left: 3px solid #10b981;
+        }
+
+        .dark .prayer-row.active {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+        }
+
+        .compass-ring {
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1), 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .compass-ring {
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .tasbih-circle {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
+        }
+
+        .tasbih-circle:active {
+            transform: scale(0.95);
+        }
+
+        .name-card {
+            transition: all 0.2s ease;
+        }
+
+        .name-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day.today {
+            background: #10b981;
+            color: white;
+            border-radius: 50%;
+        }
+
+        .calendar-day.has-event::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: #10b981;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        .calendar-day.today.has-event::after {
+            background: white;
+        }
+
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #10b981;
+        }
+
+        .install-prompt {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 50;
+        }
+
+        .dark .install-prompt {
+            background: #1f2937;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 60;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dark .toast {
+            background: #374151;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark #loading {
+            background: #111827;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 70;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .dark .modal-content {
+            background: #1f2937;
+        }
+    </style>
+</head>
+
+<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+    <div id="loading">
+        <div class="spinner mb-4"></div>
+        <p class="text-gray-600 dark:text-gray-400">Loading prayer times...</p>
+    </div>
+
+    <div id="installPrompt" class="install-prompt">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-xl">☪</div>
+            <div>
+                <p class="font-semibold text-sm">Add to Home Screen</p>
+                <p class="text-xs text-gray-500">Install this app for quick access</p>
+            </div>
+            <button id="installBtn"
+                class="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium">Install</button>
+            <button id="dismissInstall" class="text-gray-400 p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="locationModal" class="modal">
+        <div class="modal-content p-6">
+            <h3 class="text-lg font-bold mb-4">Set Location</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Unable to detect your location. Please enter
+                manually:</p>
+            <input type="text" id="manualCity" placeholder="City name (e.g., London)"
+                class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 dark:bg-gray-800 dark:text-white">
+            <div class="flex gap-3 mb-4">
+                <input type="number" id="manualLat" placeholder="Latitude" step="any"
+                    class="flex-1 p-3 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white">
+                <input type="number" id="manualLng" placeholder="Longitude" step="any"
+                    class="flex-1 p-3 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white">
+            </div>
+            <div class="flex gap-3">
+                <button id="saveLocationBtn" class="flex-1 bg-emerald-500 text-white py-3 rounded-lg font-medium">Save
+                    Location</button>
+                <button id="useDefaultLocation"
+                    class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-medium">Use
+                    Makkah</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app" class="max-w-md mx-auto min-h-screen pb-20">
+        <header
+            class="sticky top-0 z-40 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
+            <div class="px-4 py-3">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                            <i class="fas fa-mosque text-xl"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-xl font-bold">Azaan Pro</h1>
-                            <p id="currentDate" class="text-xs opacity-90">Loading...</p>
-                        </div>
+                    <div>
+                        <h1 id="cityName" class="text-lg font-bold text-gray-900 dark:text-white">Detecting...</h1>
+                        <p id="hijriDateHeader"
+                            class="text-sm text-emerald-600 dark:text-emerald-400 font-medium arabic">--</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button id="themeToggle" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
-                            <i class="fas fa-moon"></i>
-                        </button>
-                    </div>
-                </div>
-                <div id="locationDisplay" class="mt-3 flex items-center gap-2 text-sm opacity-90">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span id="locationText">Detecting location...</span>
+                    <button id="themeToggle"
+                        class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                        <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <main class="container mx-auto px-4 py-4 space-y-4">
-            <div class="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-2xl p-6 text-white shadow-lg">
+        <div id="homeTab" class="tab-content active px-4 py-4">
+            <div
+                class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white mb-4 shadow-lg shadow-emerald-500/20">
                 <div class="text-center">
-                    <p class="text-sm opacity-90 mb-1">Next Prayer</p>
-                    <h2 id="nextPrayerName" class="text-3xl font-bold mb-2">Fajr</h2>
-                    <div id="countdown" class="text-4xl font-mono font-bold">00:00:00</div>
-                    <p id="nextPrayerTime" class="text-sm opacity-90 mt-2">--:--</p>
+                    <p class="text-emerald-100 text-sm mb-1">Next Prayer</p>
+                    <h2 id="nextPrayerName" class="text-3xl font-bold mb-2">--</h2>
+                    <div id="countdown" class="text-4xl font-mono font-bold mb-2">--:--:--</div>
+                    <p id="nextPrayerTime" class="text-emerald-100 text-sm">--:--</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden mb-4">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-800">
+                    <h3 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Prayer Times
+                    </h3>
+                </div>
+                <div id="prayerTimesList" class="divide-y divide-gray-200 dark:divide-gray-800">
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-                    <i class="fas fa-clock text-teal-500 text-xl mb-2"></i>
+                <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+                    <svg class="w-6 h-6 text-emerald-500 mx-auto mb-2" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Current Time</p>
-                    <p id="currentTime" class="text-xl font-bold text-gray-800 dark:text-white">--:--</p>
+                    <p id="currentTimeDisplay" class="text-lg font-bold text-gray-800 dark:text-white">--:--</p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-                    <i class="fas fa-moon text-teal-500 text-xl mb-2"></i>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Hijri Date</p>
-                    <p id="hijriDate" class="text-sm font-bold text-gray-800 dark:text-white">--</p>
+                <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+                    <svg class="w-6 h-6 text-emerald-500 mx-auto mb-2" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Gregorian</p>
+                    <p id="gregorianDate" class="text-sm font-bold text-gray-800 dark:text-white">--</p>
                 </div>
             </div>
+        </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
-                <div class="p-4 border-b border-gray-100 dark:border-gray-700">
-                    <h3 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <i class="fas fa-praying-hands text-teal-500"></i>
-                        Prayer Times
-                    </h3>
-                </div>
-                <div id="prayerTimes" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
-            </div>
-
-            <div class="grid grid-cols-4 gap-3">
-                <button onclick="showTab('qibla')" class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-md flex flex-col items-center gap-1 hover:bg-teal-50 dark:hover:bg-gray-700 transition">
-                    <i class="fas fa-compass text-teal-500 text-xl"></i>
-                    <span class="text-xs text-gray-600 dark:text-gray-300">Qibla</span>
-                </button>
-                <button onclick="showTab('calendar')" class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-md flex flex-col items-center gap-1 hover:bg-teal-50 dark:hover:bg-gray-700 transition">
-                    <i class="fas fa-calendar-alt text-teal-500 text-xl"></i>
-                    <span class="text-xs text-gray-600 dark:text-gray-300">Calendar</span>
-                </button>
-                <button onclick="showTab('tasbih')" class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-md flex flex-col items-center gap-1 hover:bg-teal-50 dark:hover:bg-gray-700 transition">
-                    <i class="fas fa-beads text-teal-500 text-xl"></i>
-                    <span class="text-xs text-gray-600 dark:text-gray-300">Tasbih</span>
-                </button>
-                <button onclick="showTab('names')" class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-md flex flex-col items-center gap-1 hover:bg-teal-50 dark:hover:bg-gray-700 transition">
-                    <i class="fas fa-star text-teal-500 text-xl"></i>
-                    <span class="text-xs text-gray-600 dark:text-gray-300">99 Names</span>
-                </button>
-            </div>
-
-            <div id="qiblaPanel" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
+        <div id="qiblaTab" class="tab-content px-4 py-4">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 mb-4">
                 <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-compass text-teal-500"></i>
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
                     Qibla Direction
                 </h3>
-                <div class="relative w-48 h-48 mx-auto">
-                    <div id="compass" class="w-full h-full rounded-full border-4 border-teal-500 relative bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+
+                <div class="relative w-64 h-64 mx-auto mb-4">
+                    <div id="compassFace"
+                        class="w-full h-full rounded-full border-4 border-gray-300 dark:border-gray-700 compass-ring relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                         <div class="absolute top-2 left-1/2 -translate-x-1/2 text-xs font-bold text-red-500">N</div>
-                        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold text-gray-500">S</div>
-                        <div class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">W</div>
-                        <div class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">E</div>
-                        <div id="qiblaArrow" class="absolute top-1/2 left-1/2 w-1 h-20 bg-gradient-to-t from-teal-500 to-teal-300 origin-bottom -translate-x-1/2 -translate-y-full rounded-full transition-transform duration-500" style="transform: translate(-50%, -100%) rotate(0deg);">
-                            <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-8 border-l-transparent border-r-transparent border-b-teal-500"></div>
+                        <div
+                            class="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            S</div>
+                        <div
+                            class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            W</div>
+                        <div
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            E</div>
+                        <div class="absolute inset-4 rounded-full border border-gray-300 dark:border-gray-700"></div>
+                        <div id="qiblaNeedle"
+                            class="absolute top-1/2 left-1/2 w-2 h-28 origin-bottom -translate-x-1/2 -translate-y-full transition-transform duration-300"
+                            style="transform: translate(-50%, -100%) rotate(0deg);">
+                            <svg class="w-6 h-6 absolute -top-3 left-1/2 -translate-x-1/2 text-emerald-600"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                            <div
+                                class="w-1 h-full bg-gradient-to-t from-emerald-500 to-emerald-400 mx-auto rounded-full">
+                            </div>
                         </div>
-                        <div class="absolute top-1/2 left-1/2 w-4 h-4 bg-teal-600 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
+                        <div
+                            class="absolute top-1/2 left-1/2 w-4 h-4 bg-emerald-600 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-lg">
+                        </div>
                     </div>
                 </div>
-                <p id="qiblaDegree" class="text-center mt-4 text-2xl font-bold text-teal-600">0°</p>
-                <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-1">from North</p>
-                <button id="enableCompass" class="w-full mt-4 bg-teal-500 text-white py-2 rounded-lg hover:bg-teal-600 transition">
+
+                <div class="text-center mb-4">
+                    <p id="qiblaDegree" class="text-3xl font-bold text-emerald-600">0°</p>
+                    <p id="qiblaDirection" class="text-sm text-gray-500 dark:text-gray-400 mt-1">--</p>
+                    <p id="distanceToMakkah" class="text-xs text-gray-400 dark:text-gray-500 mt-1">--</p>
+                </div>
+
+                <div id="compassStatus" class="hidden mb-4">
+                    <span
+                        class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        Compass Active
+                    </span>
+                </div>
+
+                <button id="enableCompassBtn"
+                    class="w-full bg-emerald-500 text-white py-3 rounded-lg font-medium hover:bg-emerald-600 transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
                     Enable Device Compass
                 </button>
+                <p id="compassInstruction" class="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">Point the
+                    arrow toward Qibla</p>
             </div>
+        </div>
 
-            <div id="calendarPanel" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-                <div class="flex items-center justify-between mb-4">
-                    <button onclick="changeMonth(-1)" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center">
-                        <i class="fas fa-chevron-left text-gray-600 dark:text-gray-300"></i>
-                    </button>
-                    <h3 id="calendarMonth" class="font-bold text-gray-800 dark:text-white"></h3>
-                    <button onclick="changeMonth(1)" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center">
-                        <i class="fas fa-chevron-right text-gray-600 dark:text-gray-300"></i>
-                    </button>
-                </div>
-                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
-            </div>
-
-            <div id="tasbihPanel" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
-                <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-beads text-teal-500"></i>
+        <div id="tasbihTab" class="tab-content px-4 py-4">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 mb-4">
+                <h3 class="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                    </svg>
                     Digital Tasbih
                 </h3>
-                <div class="text-center">
-                    <div id="tasbihCount" class="text-6xl font-bold text-teal-600 mb-2">0</div>
-                    <div class="flex items-center justify-center gap-2 mb-6">
-                        <span class="text-sm text-gray-500">Target:</span>
-                        <button onclick="setTasbihTarget(33)" class="tasbih-target px-3 py-1 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 text-sm font-medium active">33</button>
-                        <button onclick="setTasbihTarget(99)" class="tasbih-target px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-medium">99</button>
-                        <button onclick="setTasbihTarget(100)" class="tasbih-target px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-medium">100</button>
-                    </div>
-                    <div class="flex gap-3 justify-center">
-                        <button onclick="incrementTasbih()" class="w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-white text-2xl shadow-lg active:scale-95 transition flex items-center justify-center">
-                            <i class="fas fa-plus"></i>
+
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Dhikr</label>
+                    <select id="dhikrSelect"
+                        class="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-800 dark:text-white">
+                        <option value="SubhanAllah">SubhanAllah (Glory to Allah)</option>
+                        <option value="Alhamdulillah">Alhamdulillah (Praise to Allah)</option>
+                        <option value="Allahu Akbar">Allahu Akbar (Allah is Great)</option>
+                        <option value="La ilaha illallah">La ilaha illallah (None worthy of worship)</option>
+                        <option value="Custom">Custom...</option>
+                    </select>
+                    <input type="text" id="customDhikr" placeholder="Enter custom dhikr"
+                        class="hidden w-full mt-2 p-3 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-800 dark:text-white">
+                </div>
+
+                <div class="text-center mb-6">
+                    <div class="relative inline-block">
+                        <button id="tasbihBtn"
+                            class="tasbih-circle w-40 h-40 rounded-full flex flex-col items-center justify-center text-white transition-transform relative">
+                            <span id="tasbihCount" class="text-5xl font-bold">0</span>
+                            <span class="text-sm opacity-80">/ <span id="tasbihTargetDisplay">33</span></span>
                         </button>
-                        <button onclick="resetTasbih()" class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-md active:scale-95 transition flex items-center justify-center">
-                            <i class="fas fa-undo"></i>
-                        </button>
                     </div>
-                    <div class="mt-4 flex gap-2 justify-center">
-                        <button onclick="setDhikr('SubhanAllah')" class="dhikr-btn px-4 py-2 rounded-lg bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 text-sm font-medium active">SubhanAllah</button>
-                        <button onclick="setDhikr('Alhamdulillah')" class="dhikr-btn px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-medium">Alhamdulillah</button>
-                        <button onclick="setDhikr('Allahu Akbar')" class="dhikr-btn px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-medium">Allahu Akbar</button>
+                </div>
+
+                <div class="flex items-center justify-center gap-2 mb-6">
+                    <span class="text-sm text-gray-500">Target:</span>
+                    <button class="tasbih-target px-3 py-1 rounded-full bg-emerald-500 text-white text-sm font-medium"
+                        data-target="33">33</button>
+                    <button
+                        class="tasbih-target px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-medium"
+                        data-target="99">99</button>
+                    <button
+                        class="tasbih-target px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-medium"
+                        data-target="100">100</button>
+                    <input type="number" id="customTarget" placeholder="?"
+                        class="w-12 p-1 text-center border border-gray-200 dark:border-gray-700 rounded dark:bg-gray-800 dark:text-white text-sm">
+                </div>
+
+                <div class="flex gap-3 mb-6">
+                    <button id="resetTasbih"
+                        class="flex-1 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-medium flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Reset
+                    </button>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Recent Sessions</h4>
+                    <div id="tasbihHistory" class="space-y-2">
+                        <p class="text-sm text-gray-400 text-center py-4">No sessions yet</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="namesPanel" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-                <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-star text-teal-500"></i>
-                    99 Names of Allah
-                </h3>
-                <div id="namesList" class="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto"></div>
+        <div id="calendarTab" class="tab-content px-4 py-4">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <button id="prevMonth"
+                        class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div class="text-center">
+                        <h3 id="calendarMonthYear" class="font-bold text-gray-800 dark:text-white">--</h3>
+                        <p id="calendarHijriMonth" class="text-sm text-emerald-600 dark:text-emerald-400 arabic">--</p>
+                    </div>
+                    <button id="nextMonth"
+                        class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    <div class="text-center text-xs font-bold text-gray-400 py-2">Su</div>
+                    <div class="text-center text-xs font-bold text-gray-400 py-2">Mo</div>
+                    <div class="text-center text-xs font-bold text-gray-400 py-2">Tu</div>
+                    <div class="text-center text-xs font-bold text-gray-400 py-2">We</div>
+                    <div class="text-center text-xs font-bold text-gray-400 py-2">Th</div>
+                    <div class="text-center text-xs font-bold text-gray-400 py-2">Fr</div>
+                    <div class="text-center text-xs font-bold text-gray-400 py-2">Sa</div>
+                </div>
+
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
+                <h4 class="font-bold text-gray-800 dark:text-white mb-3">Islamic Events This Month</h4>
+                <div id="monthEvents" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <div id="moreTab" class="tab-content px-4 py-4">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        99 Names of Allah
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button id="namesGridView" class="p-2 rounded-lg bg-emerald-500 text-white">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                        </button>
+                        <button id="namesListView"
+                            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex items-center justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Memorized</span>
+                        <span id="namesProgress" class="text-emerald-600 font-medium">0 / 99</span>
+                    </div>
+                    <div class="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div id="namesProgressBar"
+                            class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 0%">
+                        </div>
+                    </div>
+                </div>
+
+                <input type="text" id="namesSearch" placeholder="Search names..."
+                    class="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg mb-4 dark:bg-gray-800 dark:text-white">
+
+                <div id="namesGrid" class="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto"></div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
                 <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-cog text-teal-500"></i>
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
                     Settings
                 </h3>
+
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Calculation Method</label>
-                        <select id="calcMethod" class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                            <option value="MWL">Muslim World League</option>
-                            <option value="ISNA">Islamic Society of North America</option>
+                        <select id="settingMethod"
+                            class="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-800 dark:text-white">
+                            <option value="MWL">Muslim World League (MWL)</option>
+                            <option value="ISNA">Islamic Society of North America (ISNA)</option>
                             <option value="Egypt">Egyptian General Authority</option>
                             <option value="Makkah">Umm al-Qura, Makkah</option>
                             <option value="Karachi">University of Karachi</option>
@@ -203,62 +666,260 @@
                             <option value="Jafari">Shia Ithna-Ashari (Jafari)</option>
                         </select>
                     </div>
+
                     <div>
-                        <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Madhab</label>
-                        <select id="madhab" class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                            <option value="Standard">Standard (Shafi, Maliki, Hanbali)</option>
-                            <option value="Hanafi">Hanafi</option>
-                        </select>
+                        <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Madhab (Asr
+                            Calculation)</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="madhab" value="Standard" class="w-4 h-4 text-emerald-500"
+                                    checked>
+                                <span class="text-sm">Standard (Shafi/Maliki/Hanbali)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="madhab" value="Hanafi" class="w-4 h-4 text-emerald-500">
+                                <span class="text-sm">Hanafi</span>
+                            </label>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">Notifications</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="notifications" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-teal-500"></div>
-                        </label>
-                    </div>
+
                     <div class="flex items-center justify-between">
                         <span class="text-sm text-gray-600 dark:text-gray-400">24-Hour Format</span>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="timeFormat" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-teal-500"></div>
+                            <input type="checkbox" id="setting24h" class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500">
+                            </div>
                         </label>
                     </div>
-                    <button onclick="detectLocation()" class="w-full bg-teal-500 text-white py-3 rounded-lg hover:bg-teal-600 transition flex items-center justify-center gap-2">
-                        <i class="fas fa-location-arrow"></i>
-                        Detect My Location
-                    </button>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Dark Mode</label>
+                        <select id="settingDarkMode"
+                            class="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-800 dark:text-white">
+                            <option value="auto">Auto (System)</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Prayer Notifications</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="settingNotifications" class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500">
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Play Athan</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="settingAthan" class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500">
+                            </div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Location</label>
+                        <button id="detectLocationBtn"
+                            class="w-full bg-emerald-500 text-white py-3 rounded-lg font-medium mb-2 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Use My Location
+                        </button>
+                        <p id="currentLocationDisplay" class="text-xs text-gray-500 text-center">--</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
+                        <h4 class="font-semibold text-sm mb-2">About</h4>
+                        <p class="text-xs text-gray-500">Islamic Prayer Times v1.0</p>
+                        <p class="text-xs text-gray-400 mt-1">Prayer times calculated using PrayTimes.js</p>
+                        <button id="showTutorialBtn" class="mt-3 w-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 2h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            How to Use
+                        </button>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
 
-        <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
-            <div class="container mx-auto">
-                <div class="flex justify-around py-2">
-                    <button onclick="showMain()" class="nav-btn flex flex-col items-center gap-1 p-2 text-teal-600 dark:text-teal-400 active">
-                        <i class="fas fa-home text-lg"></i>
-                        <span class="text-xs">Home</span>
-                    </button>
-                    <button onclick="showTab('qibla')" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500">
-                        <i class="fas fa-compass text-lg"></i>
-                        <span class="text-xs">Qibla</span>
-                    </button>
-                    <button onclick="showTab('tasbih')" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500">
-                        <i class="fas fa-beads text-lg"></i>
-                        <span class="text-xs">Tasbih</span>
-                    </button>
-                    <button onclick="showTab('more')" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500">
-                        <i class="fas fa-ellipsis-h text-lg"></i>
-                        <span class="text-xs">More</span>
-                    </button>
+    <nav
+        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50">
+        <div class="max-w-md mx-auto flex justify-around py-2">
+            <button class="nav-btn flex flex-col items-center gap-1 p-2 text-emerald-500" data-tab="home">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span class="text-xs font-medium">Home</span>
+            </button>
+            <button class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500"
+                data-tab="qibla">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                <span class="text-xs font-medium">Qibla</span>
+            </button>
+            <button class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500"
+                data-tab="tasbih">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                </svg>
+                <span class="text-xs font-medium">Tasbih</span>
+            </button>
+            <button class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500"
+                data-tab="calendar">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="text-xs font-medium">Calendar</span>
+            </button>
+            <button class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500"
+                data-tab="more">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+                <span class="text-xs font-medium">More</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="nameModal" class="modal">
+        <div class="modal-content p-6 text-center">
+            <button id="closeNameModal" class="absolute top-4 right-4 text-gray-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <p id="modalNameNumber" class="text-sm text-gray-500 mb-2">--</p>
+            <h3 id="modalNameAr" class="text-4xl font-bold text-emerald-600 arabic mb-2">--</h3>
+            <p id="modalNameEn" class="text-xl font-semibold text-gray-800 dark:text-white mb-1">--</p>
+            <p id="modalNameMeaning" class="text-gray-600 dark:text-gray-400 mb-4">--</p>
+            <p id="modalNameDesc" class="text-sm text-gray-500 dark:text-gray-500 mb-6">--</p>
+            <button id="markLearnedBtn" class="bg-emerald-500 text-white px-6 py-3 rounded-lg font-medium">Mark as
+                Learned</button>
+        </div>
+    </div>
+
+    <div id="tutorialModal" class="modal">
+        <div class="modal-content p-0 max-w-md">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">How to Use</h3>
+                <button id="closeTutorial" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-white mb-1">1. Set Your Location</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Allow location access when prompted, or go to Settings > Detect My Location. You can also enter coordinates manually.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-white mb-1">2. View Prayer Times</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Home screen shows all 5 daily prayers. The next prayer is highlighted with a countdown timer. Tap the bell icon to enable notifications.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-white mb-1">3. Find Qibla Direction</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Tap Qibla tab to see the direction to Makkah. Enable device compass for real-time pointing.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-white mb-1">4. Digital Tasbih</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Use the Tasbih counter for dhikr. Select your target (33, 99, 100), choose the dhikr, and tap the circle to count.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-white mb-1">5. Hijri Calendar</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">View the Islamic calendar with Gregorian dates. See upcoming Islamic events like Ramadan and Eid.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-white mb-1">6. 99 Names of Allah</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Browse all 99 Names with meanings. Tap any name to see details and mark as learned to track progress.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-white mb-1">7. Settings</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Customize calculation method (MWL, ISNA, etc.), madhab, time format, dark mode, and prayer notifications.</p>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-4 mt-4">
+                        <p class="text-sm text-emerald-700 dark:text-emerald-400 text-center">
+                            <strong>Tip:</strong> Add this app to your home screen for quick access and offline use!
+                        </p>
+                    </div>
                 </div>
             </div>
-        </nav>
-
-        <audio id="azaanPlayer" preload="none"></audio>
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                <button id="tutorialGotIt" class="w-full bg-emerald-500 text-white py-3 rounded-lg font-medium">Got it!</button>
+            </div>
+        </div>
     </div>
 
     <script src="praytimes.js"></script>
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
+
 </html>
