@@ -155,14 +155,4 @@ To generate PNG icons from the SVG:
 1. Open `icons/generate-png.html` in a browser
 2. Right-click and save each generated canvas as PNG
 3. Save as `icon-192.png` and `icon-512.png`
-
-## License
-
-PrayTimes.js is MIT licensed. This app is open source.
-
-## Credits
-
-- PrayTimes.js library for prayer calculations
-- OpenStreetMap Nominatim for reverse geocoding
-- Google Fonts for Amiri Arabic font
-- Tailwind CSS for styling
+ 
