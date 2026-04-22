@@ -221,25 +221,31 @@ const PrayerTimesModule = {
         const madhab = SettingsModule.get('madhab') || 'Standard';
         
         this.prayTimes.setMethod(method);
-        this.prayTimes.adjust({ asrMethod: madhab === 'Hanafi' ? 2 : 1 });
+        this.prayTimes.adjust({ 
+            asrMethod: madhab === 'Hanafi' ? 2 : 1,
+            highLats: 'AngleBased'
+        });
     },
 
     calculate() {
         const location = SettingsModule.get('location') || { lat: 21.3891, lng: 39.8579 };
         const date = new Date();
         const timeFormat = SettingsModule.get('timeFormat') === '24h' ? '24h' : '12h';
-        // Use the local timezone offset in decimal hours (handles half-hour zones like IST +5.5)
         const tzOffset = -date.getTimezoneOffset() / 60;
+
+        // Validate and clamp coordinates to valid ranges
+        const lat = Math.max(-90, Math.min(90, parseFloat(location.lat) || 21.3891));
+        const lng = Math.max(-180, Math.min(180, parseFloat(location.lng) || 39.8579));
 
         const times = this.prayTimes.getTimes(
             [date.getFullYear(), date.getMonth() + 1, date.getDate()],
-            [location.lat, location.lng],
+            [lat, lng],
             tzOffset,
             0,
             timeFormat
         );
 
-        console.log('[PrayerTimes] Location:', location.name, location.lat, location.lng,
+        console.log('[PrayerTimes] Location:', location.name, lat, lng,
             '| TZ offset:', tzOffset, '| Raw times:', times);
 
         this.currentTimes = {
@@ -250,6 +256,13 @@ const PrayerTimesModule = {
             maghrib: { name: 'Maghrib', nameAr: 'المغرب', time: (times.maghrib && times.maghrib !== '-----') ? times.maghrib : '--:--' },
             isha:    { name: 'Isha',    nameAr: 'العشاء', time: (times.isha    && times.isha    !== '-----') ? times.isha    : '--:--' }
         };
+
+        // Check if all times failed (indicates invalid location or extreme latitude)
+        const allFailed = Object.values(this.currentTimes).every(p => p.time === '--:--');
+        if (allFailed) {
+            console.error('[PrayerTimes] All times failed - invalid location:', location);
+            App.showToast('Invalid location. Please set your city in Settings.');
+        }
 
         this.render();
         this.updateNextPrayer();
