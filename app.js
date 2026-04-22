@@ -1141,6 +1141,82 @@ const LocationModule = {
         QiblaModule.calculate();
         
         App.showToast('Location set to Makkah');
+    },
+
+    searchCity() {
+        const cityInput = document.getElementById('manualCity');
+        const city = cityInput.value.trim();
+        
+        if (!city) {
+            App.showToast('Please enter a city name');
+            return;
+        }
+        
+        App.showToast('Searching...');
+        
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=5`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length === 0) {
+                    App.showToast('City not found. Try a different name.');
+                    return;
+                }
+                
+                this.displaySearchResults(data);
+            })
+            .catch(() => {
+                App.showToast('Search failed. Please try again.');
+            });
+    },
+
+    displaySearchResults(results) {
+        const container = document.getElementById('searchResults');
+        const coordsDisplay = document.getElementById('coordsDisplay');
+        
+        if (results.length === 1) {
+            const result = results[0];
+            const lat = parseFloat(result.lat);
+            const lng = parseFloat(result.lon);
+            const name = result.display_name.split(',')[0];
+            
+            document.getElementById('manualLat').value = lat;
+            document.getElementById('manualLng').value = lng;
+            document.getElementById('foundCoords').textContent = `${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            
+            container.classList.add('hidden');
+            coordsDisplay.classList.remove('hidden');
+            App.showToast('Location found!');
+        } else {
+            container.innerHTML = results.map((result, index) => {
+                const name = result.display_name.split(',')[0];
+                const country = result.display_name.split(',').pop().trim();
+                return `
+                    <button class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-0"
+                        onclick="LocationModule.selectResult(${result.lat}, ${result.lon}, '${name.replace(/'/g, "\\'")}')">
+                        <p class="font-medium text-gray-800 dark:text-white">${name}</p>
+                        <p class="text-xs text-gray-500">${country}</p>
+                    </button>
+                `;
+            }).join('');
+            
+            container.classList.remove('hidden');
+            coordsDisplay.classList.add('hidden');
+        }
+    },
+
+    selectResult(lat, lng, name) {
+        document.getElementById('manualLat').value = lat;
+        document.getElementById('manualLng').value = lng;
+        document.getElementById('manualCity').value = name;
+        document.getElementById('foundCoords').textContent = `${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        
+        document.getElementById('searchResults').classList.add('hidden');
+        document.getElementById('coordsDisplay').classList.remove('hidden');
+    },
+
+    toggleAdvanced() {
+        const advanced = document.getElementById('advancedFields');
+        advanced.classList.toggle('hidden');
     }
 };
 

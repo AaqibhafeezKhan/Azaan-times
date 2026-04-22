@@ -328,22 +328,44 @@
     <div id="locationModal" class="modal">
         <div class="modal-content p-6">
             <h3 class="text-lg font-bold mb-4">Set Location</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Unable to detect your location. Please enter
-                manually:</p>
-            <input type="text" id="manualCity" placeholder="City name (e.g., London)"
-                class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 dark:bg-gray-800 dark:text-white">
-            <div class="flex gap-3 mb-4">
-                <input type="number" id="manualLat" placeholder="Latitude" step="any"
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter your city name and we'll find your location:</p>
+            
+            <div class="flex gap-2 mb-3">
+                <input type="text" id="manualCity" placeholder="Enter city name (e.g., London, Dubai, Karachi)"
                     class="flex-1 p-3 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white">
-                <input type="number" id="manualLng" placeholder="Longitude" step="any"
-                    class="flex-1 p-3 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white">
+                <button id="searchCityBtn" class="bg-emerald-500 text-white px-4 py-3 rounded-lg font-medium">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
             </div>
+            
+            <div id="searchResults" class="hidden mb-4 max-h-40 overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-lg"></div>
+            
+            <div id="coordsDisplay" class="hidden mb-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">Found coordinates:</p>
+                <p id="foundCoords" class="text-sm font-medium text-gray-800 dark:text-white"></p>
+            </div>
+            
+            <button id="showAdvancedBtn" class="text-sm text-emerald-600 dark:text-emerald-400 mb-4 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+                Advanced: Enter coordinates manually
+            </button>
+            
+            <div id="advancedFields" class="hidden mb-4">
+                <div class="flex gap-3">
+                    <input type="number" id="manualLat" placeholder="Latitude" step="any"
+                        class="flex-1 p-3 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white text-sm">
+                    <input type="number" id="manualLng" placeholder="Longitude" step="any"
+                        class="flex-1 p-3 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white text-sm">
+                </div>
+            </div>
+            
             <div class="flex gap-3">
-                <button id="saveLocationBtn" class="flex-1 bg-emerald-500 text-white py-3 rounded-lg font-medium">Save
-                    Location</button>
-                <button id="useDefaultLocation"
-                    class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-medium">Use
-                    Makkah</button>
+                <button id="saveLocationBtn" class="flex-1 bg-emerald-500 text-white py-3 rounded-lg font-medium">Save Location</button>
+                <button id="useDefaultLocation" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-medium">Use Makkah</button>
             </div>
         </div>
     </div>
