@@ -228,22 +228,27 @@ const PrayerTimesModule = {
         const location = SettingsModule.get('location') || { lat: 21.3891, lng: 39.8579 };
         const date = new Date();
         const timeFormat = SettingsModule.get('timeFormat') === '24h' ? '24h' : '12h';
-        
+        // Use the local timezone offset in decimal hours (handles half-hour zones like IST +5.5)
+        const tzOffset = -date.getTimezoneOffset() / 60;
+
         const times = this.prayTimes.getTimes(
             [date.getFullYear(), date.getMonth() + 1, date.getDate()],
             [location.lat, location.lng],
-            date.getTimezoneOffset() / -60,
+            tzOffset,
             0,
             timeFormat
         );
 
+        console.log('[PrayerTimes] Location:', location.name, location.lat, location.lng,
+            '| TZ offset:', tzOffset, '| Raw times:', times);
+
         this.currentTimes = {
-            fajr: { name: 'Fajr', nameAr: 'الفجر', time: times.fajr || '--:--' },
-            sunrise: { name: 'Sunrise', nameAr: 'الشروق', time: times.sunrise || '--:--' },
-            dhuhr: { name: 'Dhuhr', nameAr: 'الظهر', time: times.dhuhr || '--:--' },
-            asr: { name: 'Asr', nameAr: 'العصر', time: times.asr || '--:--' },
-            maghrib: { name: 'Maghrib', nameAr: 'المغرب', time: times.maghrib || '--:--' },
-            isha: { name: 'Isha', nameAr: 'العشاء', time: times.isha || '--:--' }
+            fajr:    { name: 'Fajr',    nameAr: 'الفجر',  time: (times.fajr    && times.fajr    !== '-----') ? times.fajr    : '--:--' },
+            sunrise: { name: 'Sunrise', nameAr: 'الشروق', time: (times.sunrise && times.sunrise !== '-----') ? times.sunrise : '--:--' },
+            dhuhr:   { name: 'Dhuhr',   nameAr: 'الظهر',  time: (times.dhuhr   && times.dhuhr   !== '-----') ? times.dhuhr   : '--:--' },
+            asr:     { name: 'Asr',     nameAr: 'العصر',  time: (times.asr     && times.asr     !== '-----') ? times.asr     : '--:--' },
+            maghrib: { name: 'Maghrib', nameAr: 'المغرب', time: (times.maghrib && times.maghrib !== '-----') ? times.maghrib : '--:--' },
+            isha:    { name: 'Isha',    nameAr: 'العشاء', time: (times.isha    && times.isha    !== '-----') ? times.isha    : '--:--' }
         };
 
         this.render();
@@ -818,7 +823,7 @@ const NamesModule = {
             const searchLower = this.searchQuery.toLowerCase();
             return name.en.toLowerCase().includes(searchLower) ||
                    name.meaning.toLowerCase().includes(searchLower) ||
-                   name.ar.includes(searchQuery);
+                   name.ar.includes(this.searchQuery);
         });
         
         if (this.viewMode === 'grid') {
@@ -1028,29 +1033,39 @@ const SettingsModule = {
 };
 
 const LocationModule = {
-    detect() {
+    detect(silent) {
         if (!navigator.geolocation) {
-            App.showToast('Geolocation not supported');
-            this.showManualModal();
+            if (!silent) App.showToast('Geolocation not supported on this device');
+            if (!silent) this.showManualModal();
             return;
         }
-        
-        App.showToast('Detecting location...');
-        
+
+        if (!silent) App.showToast('Detecting location...');
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const location = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                
-                this.reverseGeocode(location.lat, location.lng);
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                console.log('[Location] GPS fix:', lat, lng);
+                this.reverseGeocode(lat, lng);
             },
             (error) => {
-                console.error('Geolocation error:', error);
-                this.showManualModal();
+                console.warn('[Location] Geolocation error:', error.code, error.message);
+                if (!silent) {
+                    // Provide helpful message per error code
+                    const msgs = {
+                        1: 'Location permission denied. Please allow access or enter manually.',
+                        2: 'Location unavailable. Please enter manually.',
+                        3: 'Location timed out. Please enter manually.'
+                    };
+                    App.showToast(msgs[error.code] || 'Location error. Please enter manually.');
+                    this.showManualModal();
+                } else {
+                    // On silent auto-detect failure, just use stored/default — don't show modal
+                    console.log('[Location] Silent detect failed, using stored location.');
+                }
             },
-            { timeout: 10000, enableHighAccuracy: true }
+            { timeout: 15000, enableHighAccuracy: true, maximumAge: 60000 }
         );
     },
 
@@ -1182,11 +1197,12 @@ const App = {
         setInterval(() => this.updateCurrentTime(), 1000);
         
         const location = SettingsModule.get('location');
-        if (location && location.name && location.name !== 'Makkah') {
+        if (location && location.name) {
             document.getElementById('cityName').textContent = location.name;
-        } else {
-            LocationModule.detect();
         }
+        // Always try to get a fresh GPS fix on startup (silently — no modal on failure)
+        // This ensures location stays accurate for both laptop and PWA on phone
+        LocationModule.detect(true);
         
         setTimeout(() => {
             document.getElementById('loading').style.display = 'none';
