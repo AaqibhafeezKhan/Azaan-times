@@ -1382,6 +1382,20 @@ const App = {
             LocationModule.useDefault();
         });
         
+        document.getElementById('searchCityBtn').addEventListener('click', () => {
+            LocationModule.searchCity();
+        });
+        
+        document.getElementById('manualCity').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                LocationModule.searchCity();
+            }
+        });
+        
+        document.getElementById('showAdvancedBtn').addEventListener('click', () => {
+            LocationModule.toggleAdvanced();
+        });
+        
         document.getElementById('showTutorialBtn').addEventListener('click', () => {
             this.showTutorial();
         });
