@@ -243,7 +243,7 @@ function PrayTimes(method) {
 
     function asrTime(factor, time) {
         var decl = sunPosition(jDate + time).decl;
-        var angle = DMath.arccot(factor + DMath.tan(Math.abs(lat - decl)));
+        var angle = -DMath.arccot(factor + DMath.tan(Math.abs(lat - decl)));
         return sunAngleTime(time, angle, false);
     }
 
