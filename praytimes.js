@@ -232,7 +232,7 @@ function PrayTimes(method) {
     }
 
     function sunAngleTime(time, angle, ccw) {
-        var decl = sunPosition(jDate + time).dec;
+        var decl = sunPosition(jDate + time).decl;
         var numAngle = typeof angle === 'string' ? parseFloat(angle) : angle;
         var cosVal = (-DMath.sin(numAngle) - DMath.sin(decl) * DMath.sin(lat)) /
             (DMath.cos(decl) * DMath.cos(lat));
@@ -242,7 +242,7 @@ function PrayTimes(method) {
     }
 
     function asrTime(factor, time) {
-        var decl = sunPosition(jDate + time).dec;
+        var decl = sunPosition(jDate + time).decl;
         var angle = DMath.arccot(factor + DMath.tan(Math.abs(lat - decl)));
         return sunAngleTime(time, angle, false);
     }
